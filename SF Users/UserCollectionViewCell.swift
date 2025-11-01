@@ -12,12 +12,17 @@ class UserCollectionViewCell: UICollectionViewCell {
     
     private lazy var nameLabel: UILabel = {
         let label = UILabel()
+        label.font = .systemFont(ofSize: 14, weight: .bold)
+        label.setContentHuggingPriority(.required, for: .horizontal)
+        label.setContentCompressionResistancePriority(.required, for: .horizontal)
         return label
     }()
     
     private lazy var reputationLabel: UILabel = {
         let label = UILabel()
-        label.textColor = .blue
+        label.font = .systemFont(ofSize: 9, weight: .regular)
+        label.setContentHuggingPriority(.required, for: .horizontal)
+        label.setContentCompressionResistancePriority(.required, for: .horizontal)
         return label
     }()
     
@@ -27,25 +32,21 @@ class UserCollectionViewCell: UICollectionViewCell {
         return imageView
     }()
     
+    private lazy var checkMarkImageView: UIImageView = {
+        let imageView = UIImageView(image: UIImage(named: "checkmark_image"))
+        imageView.contentMode = .scaleAspectFit
+        imageView.isHidden = true
+        return imageView
+    }()
+    
     private lazy var followButton: UIButton = {
-        let button = UIButton(type: .custom)
-        button.backgroundColor = .blue
+        let button = UIButton(type: .roundedRect)
         button.addTarget(self,
                          action: #selector(onFollowButtonTap),
                          for: .touchUpInside)
-        button.layer.cornerRadius = 3
         return button
     }()
-    
-    private lazy var containerView: UIStackView = {
-        let stackView = UIStackView()
-        stackView.translatesAutoresizingMaskIntoConstraints = false
-        stackView.axis = .horizontal
-        stackView.distribution = .fillEqually
-        stackView.spacing = 10
-        return stackView
-    }()
-    
+
     private var isFollowed = false
     
     var didTapFollowButton: (() -> Void)?
@@ -66,12 +67,14 @@ class UserCollectionViewCell: UICollectionViewCell {
         super.prepareForReuse()
         didTapFollowButton = nil
         isFollowed = false
+        checkMarkImageView.isHidden = false
     }
     
     func configure(with data: User) {
         isFollowed = data.isFollowed
         nameLabel.text = data.name
         reputationLabel.text = String(data.reputation)
+        checkMarkImageView.isHidden = !isFollowed
         if let link = data.profileImage {
             profileImage.downloaded(from: link)
         } else {
@@ -83,18 +86,56 @@ class UserCollectionViewCell: UICollectionViewCell {
     
     // MARK: - Private
     private func setupCell() {
-        [profileImage, nameLabel, reputationLabel, followButton].forEach {
-            containerView.addArrangedSubview($0)
+        
+        contentView.addSubview(profileImage)
+        contentView.addSubview(nameLabel)
+        contentView.addSubview(reputationLabel)
+        contentView.addSubview(followButton)
+        profileImage.addSubview(checkMarkImageView)
+        
+        let labelContainer = UIView()
+        labelContainer.addSubview(nameLabel)
+        labelContainer.addSubview(reputationLabel)
+        contentView.addSubview(labelContainer)
+        
+        
+        [profileImage, nameLabel, reputationLabel, followButton, checkMarkImageView, labelContainer].forEach {
             $0.translatesAutoresizingMaskIntoConstraints = false
         }
         
-        contentView.addSubview(containerView)
         NSLayoutConstraint.activate([
-            containerView.topAnchor.constraint(equalTo: topAnchor),
-            containerView.bottomAnchor.constraint(equalTo: bottomAnchor),
-            containerView.leadingAnchor.constraint(equalTo: leadingAnchor),
-            containerView.trailingAnchor.constraint(equalTo: trailingAnchor)
+            profileImage.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            profileImage.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+            profileImage.widthAnchor.constraint(equalToConstant: 60),
+            profileImage.heightAnchor.constraint(equalTo: profileImage.widthAnchor),
+            
+            checkMarkImageView.trailingAnchor.constraint(equalTo: profileImage.trailingAnchor, constant: -4),
+            checkMarkImageView.bottomAnchor.constraint(equalTo: profileImage.bottomAnchor, constant: -4),
+            checkMarkImageView.widthAnchor.constraint(equalToConstant: 20),
+            checkMarkImageView.heightAnchor.constraint(equalTo: checkMarkImageView.widthAnchor),
+            
+            labelContainer.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+            labelContainer.leadingAnchor.constraint(equalTo: profileImage.trailingAnchor, constant: 12),
+            labelContainer.trailingAnchor.constraint(equalTo: followButton.leadingAnchor, constant: -12),
+            
+            nameLabel.topAnchor.constraint(equalTo: labelContainer.topAnchor),
+            nameLabel.leadingAnchor.constraint(equalTo: labelContainer.leadingAnchor),
+            nameLabel.trailingAnchor.constraint(equalTo: labelContainer.trailingAnchor),
+            
+            reputationLabel.topAnchor.constraint(equalTo: nameLabel.bottomAnchor, constant: 4),
+            reputationLabel.leadingAnchor.constraint(equalTo: labelContainer.leadingAnchor),
+            reputationLabel.trailingAnchor.constraint(equalTo: labelContainer.trailingAnchor),
+            reputationLabel.bottomAnchor.constraint(equalTo: labelContainer.bottomAnchor),
+            
+            followButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+            followButton.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+            followButton.widthAnchor.constraint(equalToConstant: 80),
+            followButton.heightAnchor.constraint(equalToConstant: 32)
         ])
+
+        
+        profileImage.layer.cornerRadius = 30
+        profileImage.clipsToBounds = true
     }
     
     @objc
