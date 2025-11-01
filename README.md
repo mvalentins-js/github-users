@@ -7,7 +7,7 @@ The app demonstrates the use of clean architecture, MVVM pattern, repository abs
 
 ## 🚀 Features
 
-- Fetch Stack Overflow users (top 20 by reputation)
+- Fetch Stack Overflow users (top 20 by reputation). Empty state view shown when there are no users to display.
 - Follow/unfollow users and persist their state across app sessions
 - Dependency injection for testing and flexibility
 - Coordinator pattern for navigation and alerts
@@ -64,8 +64,7 @@ Cmd + U
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/<your-username>/SFUsers.git
-   cd SFUsers
+   https://github.com/mvalentins-js/github-users.git
    ```
 
 2. Open the project in Xcode:
@@ -100,4 +99,3 @@ https://api.stackexchange.com/2.2/users?page=1&pagesize=20&order=desc&sort=reput
 
 Developed by **Monika Stoyanova**  
 iOS Developer | Swift | UIKit | MVVM
-

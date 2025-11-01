@@ -22,13 +22,15 @@ class SFUserListViewController: UIViewController {
         
     }()
     
-    private lazy var activityIndicator: UIActivityIndicatorView = {
-        let view = UIActivityIndicatorView(style: .large)
-        view.translatesAutoresizingMaskIntoConstraints = false
-        view.hidesWhenStopped = true
+    private lazy var emptyView: UIView = {
+        let emptyConfiguration = EmptyStateContentConfiguration(
+            message: "No users found.\nPlease try again later.",
+            image: UIImage(systemName: "person.2.slash")
+        )
+        let view = emptyConfiguration.makeContentView()
         return view
     }()
-    
+
     private var viewModel: SFUserViewModelProtocol
     
     // MARK: - Initialization
@@ -63,13 +65,6 @@ class SFUserListViewController: UIViewController {
             collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
-        
-        view.addSubview(activityIndicator)
-        
-        NSLayoutConstraint.activate([
-            activityIndicator.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            activityIndicator.centerYAnchor.constraint(equalTo: view.centerYAnchor)
-        ])
     }
     
     private func setupCollectionView() {
@@ -87,30 +82,30 @@ class SFUserListViewController: UIViewController {
                 } else {
                     self?.collectionView.reloadData()
                 }
-                self?.activityIndicator.stopAnimating()
+                self?.updateEmptyState()
             }
         }
-
+        
         viewModel.onError = { [weak self] in
-                self?.showError()
+            Task { @MainActor in
+                self?.updateEmptyState()
+            }
         }
     }
     
     // MARK: - Data Loading
     private func loadData() {
         Task { @MainActor in
-            activityIndicator.startAnimating()
             await viewModel.fetchUsers()
         }
         
     }
     
     // MARK: - Error Handling
-    private func showError() {
-        Task { @MainActor in
-            activityIndicator.startAnimating()
-        }
+    private func updateEmptyState() {
+        collectionView.backgroundView = viewModel.users.isEmpty ? emptyView : nil
     }
+    
 }
 
 // MARK: - UICollectionViewDataSource
