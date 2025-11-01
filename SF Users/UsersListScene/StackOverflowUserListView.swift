@@ -7,7 +7,6 @@
 
 import UIKit
 
-@MainActor
 class SFUserListViewController: UIViewController {
     // MARK: - Properties
     private lazy var collectionView: UICollectionView = {
@@ -56,7 +55,6 @@ class SFUserListViewController: UIViewController {
         view.backgroundColor = .systemBackground
         title = "Users"
         
-        // Setup collectionView
         view.addSubview(collectionView)
         
         NSLayoutConstraint.activate([
@@ -66,7 +64,6 @@ class SFUserListViewController: UIViewController {
             collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
         
-        // Setup Activity Indicator
         view.addSubview(activityIndicator)
         
         NSLayoutConstraint.activate([
@@ -78,12 +75,13 @@ class SFUserListViewController: UIViewController {
     private func setupCollectionView() {
         collectionView.delegate = self
         collectionView.dataSource = self
-        collectionView.register(UserCollectionViewCell.self, forCellWithReuseIdentifier: "UserCell")
+        collectionView.register(UserCollectionViewCell.self,
+                                forCellWithReuseIdentifier: "UserCell")
     }
     
     private func setupViewModel() {
         viewModel.onUsersUpdated = { [weak self] indexPath in
-            Task {
+            Task { @MainActor in
                 if let indexPath {
                     self?.collectionView.reloadItems(at: [indexPath])
                 } else {
@@ -92,38 +90,24 @@ class SFUserListViewController: UIViewController {
                 self?.activityIndicator.stopAnimating()
             }
         }
-        
-        // TODO: Move to coordinator
-        viewModel.onError = { [weak self] error in
-            Task {
-                let alert = UIAlertController(title: "Network issue",
-                                              message: "Please try again later",
-                                              preferredStyle: .alert)
-                alert.addAction(UIAlertAction(title: "OK",
-                                              style: .default,
-                                              handler: { [weak alert] _ in
-                    alert?.dismiss(animated: true)
-                }))
-                //                alert.view.backgroundColor = .blue
-                self?.present(alert, animated: true)
-                self?.showError(message: error)
-            }
+
+        viewModel.onError = { [weak self] in
+                self?.showError()
         }
     }
     
     // MARK: - Data Loading
     private func loadData() {
-        Task {
+        Task { @MainActor in
             activityIndicator.startAnimating()
             await viewModel.fetchUsers()
-            activityIndicator.stopAnimating()
         }
         
     }
     
     // MARK: - Error Handling
-    private func showError(message: String) {
-        Task {
+    private func showError() {
+        Task { @MainActor in
             activityIndicator.startAnimating()
         }
     }
@@ -136,7 +120,8 @@ extension SFUserListViewController: UICollectionViewDataSource {
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "UserCell", for: indexPath) as! UserCollectionViewCell
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "UserCell",
+                                                      for: indexPath) as! UserCollectionViewCell
         let user = viewModel.users[indexPath.item]
         cell.configure(with: user)
         
@@ -144,15 +129,6 @@ extension SFUserListViewController: UICollectionViewDataSource {
             self?.viewModel.toggleFollowState(on: indexPath)
         }
         return cell
-    }
-}
-
-// MARK: - UICollectionViewDelegate
-extension SFUserListViewController: UICollectionViewDelegate {
-    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        collectionView.deselectItem(at: indexPath, animated: true)
-        let user = viewModel.users[indexPath.item]
-        print("Selected user: \(user.name)")
     }
 }
 

@@ -20,9 +20,8 @@ protocol APIServiceProtocol {
 
 final class APIService: APIServiceProtocol {
     
-    // TODO: Fix url endpoint
     private let session: URLSession
-    private let baseUrl = URL(string:"http://api.stackexchange.com/2.2/users?page=1&pagesize=20&order=desc&sort=reputation&site=stackoverflow")
+    private let baseUrl = URL(string:"http://api.stackexchange.com/2.2/")
     
     init(session: URLSession = .shared) {
         self.session = session
@@ -30,7 +29,7 @@ final class APIService: APIServiceProtocol {
     
     func fetchData<T: Decodable>(from endpoint: String, responseType: T.Type) async throws -> T {
         
-        guard let url = baseUrl else {
+        guard let url = URL(string: endpoint, relativeTo: baseUrl) else {
             throw APIError.invalidURL
         }
         

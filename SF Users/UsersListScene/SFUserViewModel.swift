@@ -11,17 +11,15 @@ protocol SFUserViewModelProtocol {
     var users: [User] { get }
     var isLoading: Bool { get }
     var onUsersUpdated: ((IndexPath?) -> Void)? { get set }
-    var onError: ((String) -> Void)? { get set }
+    var onError: (() -> Void)? { get set }
+    var shouldShowAlert: (() -> Void)? { get set }
     
     func fetchUsers() async
     func toggleFollowState(on indexPath: IndexPath)
 }
 
 class SFUserViewModel: SFUserViewModelProtocol {
-    
-    enum Constants {
-        static let userFriendlyErrorMessage = "Something went wrong, please try again."
-    }
+
     // MARK: - Properties
     private let repository: SFRepositoryProtocol
     
@@ -30,11 +28,12 @@ class SFUserViewModel: SFUserViewModelProtocol {
     private var followStates: [String: Bool] = [:]
     
     var onUsersUpdated: ((IndexPath?) -> Void)?
-    var onError: ((String) -> Void)?
+    var onError: (() -> Void)?
+    var shouldShowAlert: (() -> Void)?
     
     // MARK: - Initialization
     init(repository: SFRepositoryProtocol) {
-        self.repository = SFRepository()
+        self.repository = repository
     }
     
     // MARK: - Public Methods
@@ -44,7 +43,8 @@ class SFUserViewModel: SFUserViewModelProtocol {
             users.forEach { followStates[$0.name] = $0.isFollowed }
             onUsersUpdated?(nil)
         } catch {
-            onError?(Constants.userFriendlyErrorMessage)
+            onError?()
+            shouldShowAlert?()
         }
     }
     

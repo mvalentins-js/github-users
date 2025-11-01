@@ -9,17 +9,20 @@ import UIKit
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
-
+    
     var window: UIWindow?
-
-    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+    var appCoordinator: AppCoordinator?
+    
+    func application(
+        _ application: UIApplication,
+        didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
+    ) -> Bool {
+        
+        let navigationController = UINavigationController()
+        appCoordinator = AppCoordinator(navigationController: navigationController)
+        appCoordinator?.start()
         
         window = UIWindow(frame: UIScreen.main.bounds)
-        
-        let viewModel = SFUserViewModel(repository: SFRepository()) // TODO: Create a coordinator
-        let viewController = SFUserListViewController(viewModel: viewModel)
-        let navigationController = UINavigationController(rootViewController: viewController)
-        
         window?.rootViewController = navigationController
         window?.makeKeyAndVisible()
         
@@ -27,4 +30,3 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     
 }
-

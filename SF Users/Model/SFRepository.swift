@@ -39,7 +39,7 @@ class SFRepository: SFRepositoryProtocol {
     // MARK: - Properties
     private let apiService: APIServiceProtocol
     private let localDataService: LocalDataServiceProtocol
-    private let endPoint = "users?page=1&pagesize=20&order=desc&sort=reputation&site=stackoverflow" //TODO: fix
+    private let endPoint = "users?page=1&pagesize=20&order=desc&sort=reputation&site=stackoverflow"
     private let followedUsersKey: String = "favouriteUsers"
     
     // MARK: - Init
@@ -57,14 +57,11 @@ class SFRepository: SFRepositoryProtocol {
         let followed = localDataService.loadData(for: followedUsersKey,
                                                  type: [String:Bool].self)
         
-        print("@@ followed fetched: \(followed)")
-        
         return mergeUsers(remote: remote, local: followed)
     }
     
     func saveFollowedUsers(users: [String:Bool]) {
         localDataService.save(data: users, key: followedUsersKey)
-        print("@@ Saved \(users)")
     }
     
     // MARK: - Private
