@@ -39,7 +39,7 @@ class SFRepository: SFRepositoryProtocol {
     // MARK: - Properties
     private let apiService: APIServiceProtocol
     private let localDataService: LocalDataServiceProtocol
-    private let endPoint = "userss?page=1&pagesize=20&order=desc&sort=reputation&site=stackoverflow"
+    private let endPoint = "users?page=1&pagesize=20&order=desc&sort=reputation&site=stackoverflow"
     private let followedUsersKey: String = "favouriteUsers"
     
     // MARK: - Init
